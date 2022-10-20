@@ -1,3 +1,4 @@
+package Client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class MyHttpClient implements MyWebClient {
 
             StringBuilder req = new StringBuilder("");
 
-            req.append("Get /index.html HTTP/1.1\r\n");
+            req.append("Get /" + objectName + " HTTP/1.1\r\n");
             req.append("Host: " + host + ":" + port + "\r\n");
             req.append("Accept: text/html,application/xhtml+xml\r\n");
 
@@ -48,7 +49,6 @@ public class MyHttpClient implements MyWebClient {
 
             socket.close();
             
-
         } catch (IOException e){}
 
             System.err.println("Couldn't get I/O for the connection to " + host);
