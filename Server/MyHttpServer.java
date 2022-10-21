@@ -13,15 +13,14 @@ public class MyHttpServer{
         int count = 0;
 
         try {
-            Logger log = new Logger();
             ServerSocket serverSocket = new ServerSocket(portNumber, 5);
             while(true){
 
-                System.out.println("Listening for connections...\n");
+                System.out.println("Listening for connections...");
                 Socket socket = serverSocket.accept();
-                System.out.println("========Connection Accepted========\n Connection went to thread " + count );
+                System.out.println("\n======== Connection Established ========\n");
                 count++;
-                ClientHandler thread = new ClientHandler(socket, log);
+                ClientHandler thread = new ClientHandler(socket);
                 (new Thread(thread)).start();
 
             }
