@@ -1,6 +1,8 @@
 package Server;
-import java.net.*;
-import java.io.*;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class MyHttpServer{
     public static void main(String[] args) throws IOException{
@@ -10,18 +12,25 @@ public class MyHttpServer{
         }
 
         int portNumber = Integer.parseInt(args[0]);
-        int count = 0;
+
 
         try {
-            ServerSocket serverSocket = new ServerSocket(portNumber, 5);
+            ThreadGroup group_t = new ThreadGroup("threads");
+            ServerSocket serverSocket = new ServerSocket(portNumber);
+
             while(true){
 
+                System.out.println("\nThread count" + group_t.activeCount());
                 System.out.println("Listening for connections...");
-                Socket socket = serverSocket.accept();
-                System.out.println("\n======== Connection Established ========\n");
-                count++;
-                ClientHandler thread = new ClientHandler(socket);
-                (new Thread(thread)).start();
+
+                while(group_t.activeCount() >= 5){}
+
+                if(group_t.activeCount() < 5) {
+                    Socket socket = serverSocket.accept();
+                    System.out.println("\n======== Connection Established ========\n");
+                    ClientHandler thread = new ClientHandler(socket);
+                    (new Thread(group_t, thread)).start();
+                }
 
             }
         }catch (IOException e) {
