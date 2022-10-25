@@ -36,7 +36,7 @@ public class MyHttpServer{
                     Socket socket = serverSocket.accept();
                     System.out.println("[HTTP]::Received new request");
                     System.out.println("\n======== Connection Established ========\n");
-                    ClientHandler thread = new ClientHandler(socket, "localhost", portNumber);
+                    ClientHandler thread = new ClientHandler(socket, "localhost");
                     (new Thread(group_t, thread)).start();
                 }
 

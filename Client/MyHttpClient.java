@@ -52,9 +52,9 @@ public class MyHttpClient implements MyWebClient {
             char ch;
 
             String req = "GET /" + objectName + " HTTP/1.1\r\n" +
-                    "Host: " + host + ":" + port + "\r\n" +
+                    "Host: " + host + "\r\n" +
                     "\r\n";
-            out.write(req.getBytes(StandardCharsets.UTF_8));
+            out.write(req.getBytes());
             BufferedReader inReader = new BufferedReader(new InputStreamReader(in));
             StringBuilder response = new StringBuilder();
             while((chint = inReader.read()) != -1){
@@ -73,7 +73,6 @@ public class MyHttpClient implements MyWebClient {
                 ch = (char) chint;
                 response.append(ch);
             }
-            inReader.close();
             System.out.println("\n" + response);
             
         } catch (IOException e) {
@@ -94,13 +93,13 @@ public class MyHttpClient implements MyWebClient {
 
             String eData = formatPost(data);
             req.append("POST /simpleForm.html HTTP/1.1\r\n");
-            req.append("Host: ").append(host).append(":").append(port).append("\r\n");
+            req.append("Host: ").append(host).append("\r\n");
             req.append("Content-Length: ").append(eData.length()).append("\r\n");
             req.append("\r\n");
             req.append(eData);
 
 
-            out.write(req.toString().getBytes(StandardCharsets.UTF_8));
+            out.write(req.toString().getBytes());
 
             BufferedReader inReader = new BufferedReader(new InputStreamReader(in));
             StringBuilder response = new StringBuilder();
@@ -120,7 +119,6 @@ public class MyHttpClient implements MyWebClient {
                 ch = (char) chint;
                 response.append(ch);
             }
-            inReader.close();
             System.out.println("\n" + response);
 
         } catch (IOException e) {
