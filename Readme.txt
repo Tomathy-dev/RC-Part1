@@ -15,9 +15,9 @@ Classe que gere os requests dos clients, avalia-os e retorna uma resposta adequa
 
 Dentro do Client temos as classes MyWebClient, My HttpClient e TestMP1:
 
+
 /*****************MyWebClient*****************\
 Interface que agrupa métodos de envio de requests
-
 
 /*****************MyHttpClient*****************\
 Classe que implementa MyWebClient e disponibiliza os vários métodos para enviar Requests para o server.

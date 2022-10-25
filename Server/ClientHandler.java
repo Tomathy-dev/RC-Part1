@@ -9,7 +9,9 @@ import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+/*****************ClientHandler*****************\
+ Classe que gere os requests dos clients, avalia-os e retorna uma resposta adequada
+ */
 public class ClientHandler implements Runnable {
     
     private final Socket socket;
@@ -22,10 +24,12 @@ public class ClientHandler implements Runnable {
         this.privhost = host;
     }
 
+    //Returns a Matcher to evaluate if the request has correct spacing
     public Matcher matchingRegX(String regex, String s){
         return Pattern.compile(regex).matcher(s);
     }
 
+    //Method that return Day of the Week and Month to later attach it to response by the server
     public String DateFormat(){
         DateTimeFormatter day = DateTimeFormatter.ofPattern("dd");
         DateTimeFormatter year = DateTimeFormatter.ofPattern("yyyy HH:mm:ss");
@@ -69,8 +73,6 @@ public class ClientHandler implements Runnable {
     public void run() {
         String myName = Thread.currentThread().getName() + " ";
 
-        System.out.println("[Server]::Created " + myName + "\n");
-        System.out.println("[Server]::Reading request from socket...\n");
         try{
             BufferedReader bfReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             while (true) {
@@ -98,9 +100,11 @@ public class ClientHandler implements Runnable {
                 int cl = 0;
                 int status = 0;
                 boolean bad = false;
-                boolean flag = false;
+                boolean flag = false; //flag: Has Stream been read?
 
-                //Reads the request from the stream
+                System.out.println("[Server]::Reading request from socket...\n");
+
+                //Reads the Request Line and headers of the request
                 while ((charint = bfReader.read()) != -1) {
                     ch = (char) charint;
                     sb.append(ch);
@@ -131,10 +135,12 @@ public class ClientHandler implements Runnable {
                     while(matcherS.find())
                         n_count++;
 
+                    //Number of spaces, \r and \n is expected or not
                     if(s_count != scount || r_count != rcount || n_count != ncount){
                         bad = true;
                         status = 400;
                     }
+                    //Method not recognized, Malformed GET/POST request
                     if(!method.equals("GET") && !method.equals("POST")){
                         bad = true;
                         status = 501;
@@ -148,7 +154,7 @@ public class ClientHandler implements Runnable {
 
                     String[] arr = cabecalho.split("\\r\\n");
                     String[] requestLines = Arrays.stream(arr).filter(x -> x.length() > 0).toArray(String[]::new);
-                    if(method.equals("POST")) {
+                    if(method.equals("POST")) { //Reads the body of the request, if there is one (only happens with POST requests)
                         while (((charint = bfReader.read()) != -1)) {
                             val++;
                             ch = (char) charint;
@@ -160,7 +166,7 @@ public class ClientHandler implements Runnable {
                     }
 
                     if(!bad){
-
+                        //appropriate number of headers
                         if((method.equals("GET") && requestLines.length != 2) || (method.equals("POST") && requestLines.length != 3)){
                             bad = true;
                             status = 400;
@@ -168,25 +174,25 @@ public class ClientHandler implements Runnable {
                         if(!bad) {
                             String[] stLine = requestLines[0].split(" ");
                             String[] hostLine = requestLines[1].split(" ");
-                            if(stLine.length != 3 || hostLine.length != 2){
+                            if(stLine.length != 3 || hostLine.length != 2){ //Correct number of attributes for the headers
                                 bad = true;
                                 status = 400;
                             }else {
                                 page = stLine[1];
                                 version = stLine[2];
                                 host = hostLine[1];
-                                if(!((page.equals("/index.html") && method.equals("GET")) || (page.equals("/simpleForm.html") && method.equals("POST")))){
+                                if(!((page.equals("/index.html") && method.equals("GET")) || (page.equals("/simpleForm.html") && method.equals("POST")))){//Do we recognize the page requested?
                                     bad = true;
                                     status = 404;
                                 }
-                                if(!version.equals("HTTP/1.1") && !bad){
+                                if(!version.equals("HTTP/1.1") && !bad){//Version Control
                                     bad = true;
                                     status = 505;
                                 }
                                 if(!host.equals(privhost) && !bad){
                                     bad = true;
                                     status = 421;
-                                }else if(method.equals("POST") && !bad){
+                                }else if(method.equals("POST") && !bad){//Evaluation of POST body, given then to name and id variables
                                     String[] temp1 = body.split("&");
                                     if(temp1.length == 2){
                                         String[] tempname = temp1[0].split("=");
@@ -239,7 +245,7 @@ public class ClientHandler implements Runnable {
                         response.append("HTTP/1.1 200 OK\r\n");
                     }
 
-                    if(!bad){
+                    if(!bad){//Content to be sent
                         if(method.equals("GET")){
                             BufferedReader file = new BufferedReader((new FileReader(dir + page)));
                             StringBuilder fileS = new StringBuilder();

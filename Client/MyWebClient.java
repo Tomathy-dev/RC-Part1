@@ -1,6 +1,9 @@
 package Client;
 import java.io.IOException;
 
+/*****************MyWebClient*****************\
+ Interface que agrupa métodos de envio de requests
+ */
 public interface MyWebClient {
     
     public void getResource(String objectName) throws IOException;

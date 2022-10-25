@@ -8,6 +8,9 @@ import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 
+/*****************MyHttpClient*****************\
+ Classe que implementa MyWebClient e disponibiliza os vários métodos para enviar Requests para o server.
+ */
 public class MyHttpClient implements MyWebClient {
 
     private Socket socket;
@@ -45,6 +48,7 @@ public class MyHttpClient implements MyWebClient {
 		}
     }
 
+    //Method sends GET request asking for the page <objectName>
     public void getResource(String objectName) throws IOException{
 
         try{
@@ -88,6 +92,7 @@ public class MyHttpClient implements MyWebClient {
         }
     }
 
+    //Method sends POST request with <data>
     public void postData(String[] data) throws IOException{
 
         try{
@@ -133,6 +138,8 @@ public class MyHttpClient implements MyWebClient {
         }
 
     }
+
+    //Method sends Unimplemnted Request to Server
     public void sendUnimplementedMethod(String wrongMethodName) throws IOException{
         try {
 
@@ -163,6 +170,13 @@ public class MyHttpClient implements MyWebClient {
 
         }
     }
+
+    /**
+     * Sends a malformed request of <type>
+     * type 1 - missing \r\n
+     * tupe 2 - extra spaces
+     * type 3 - missing HTTP version
+     */
     public void malformedRequest(int type) throws IOException{
         try {
             String req;
@@ -202,6 +216,8 @@ public class MyHttpClient implements MyWebClient {
 
         }
     }
+
+    //closes the socket
     public void close(){
         try {
             inReader.close();
