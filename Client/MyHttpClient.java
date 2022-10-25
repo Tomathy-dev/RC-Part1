@@ -15,6 +15,7 @@ public class MyHttpClient implements MyWebClient {
     private int port;
     private InputStream in;
     private OutputStream out;
+    private BufferedReader inReader;
 
     private String formatPost(String[] input){
         String format = "";
@@ -34,6 +35,7 @@ public class MyHttpClient implements MyWebClient {
             this.socket = new Socket(hostName, portNumber);
             this.in = socket.getInputStream();
             this.out = socket.getOutputStream();
+            this.inReader = new BufferedReader(new InputStreamReader(in));
 
         }catch (IOException e){
 			
@@ -55,23 +57,27 @@ public class MyHttpClient implements MyWebClient {
                     "Host: " + host + "\r\n" +
                     "\r\n";
             out.write(req.getBytes());
-            BufferedReader inReader = new BufferedReader(new InputStreamReader(in));
+
             StringBuilder response = new StringBuilder();
             while((chint = inReader.read()) != -1){
                 ch = (char) chint;
                 response.append(ch);
                 if(ch == '\n')
                     ncount++;
-                if(ncount == 4)
+                if(ncount > 0 && (response.indexOf("200") != -1)){
+                    if(ncount == 4)
+                        break;
+                }else if(ncount == 3)
                     break;
             }
-
-            String[] resS = response.toString().split(": ");
-            clength = Integer.parseInt(resS[2].replace("\r\n", ""));
-            for(int i = 0; i < clength; i++){
-                chint = inReader.read();
-                ch = (char) chint;
-                response.append(ch);
+            if(response.indexOf("200") != -1) {
+                String[] resS = response.toString().split(": ");
+                clength = Integer.parseInt(resS[2].replace("\r\n", ""));
+                for (int i = 0; i < clength; i++) {
+                    chint = inReader.read();
+                    ch = (char) chint;
+                    response.append(ch);
+                }
             }
             System.out.println("\n" + response);
             
@@ -101,7 +107,6 @@ public class MyHttpClient implements MyWebClient {
 
             out.write(req.toString().getBytes());
 
-            BufferedReader inReader = new BufferedReader(new InputStreamReader(in));
             StringBuilder response = new StringBuilder();
             while((chint = inReader.read()) != -1){
                 ch = (char) chint;
@@ -129,13 +134,83 @@ public class MyHttpClient implements MyWebClient {
 
     }
     public void sendUnimplementedMethod(String wrongMethodName) throws IOException{
+        try {
 
+            int ncount = 0;
+            int chint, clength;
+            char ch;
+
+            String req = wrongMethodName + " /index.html HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "\r\n";
+
+
+            out.write(req.getBytes());
+
+
+            StringBuilder response = new StringBuilder();
+            while ((chint = inReader.read()) != -1) {
+                ch = (char) chint;
+                response.append(ch);
+                if (ch == '\n')
+                    ncount++;
+                if (ncount == 3)
+                    break;
+            }
+
+            System.out.println("\n" + response);
+        }catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to " + host);
+            System.exit(1);
+
+        }
     }
     public void malformedRequest(int type) throws IOException{
+        try {
+            String req;
+            int ncount = 0;
+            int chint, clength;
+            char ch;
 
+            String req1 = "GET /index.html HTTP/1.1Host: " + host + "\r\n\r\n";
+            String req2 = "GET /index.html                    HTTP/1.1\r\nHost: " + host + "\r\n\r\n";
+            String req3 = "GET /index.html\r\nHost: " + host + "\r\n\r\n";
+
+            switch(type){
+                case 1: req = req1; break;
+                case 2: req = req2; break;
+                case 3: req = req3; break;
+                default: req = ""; break;
+            }
+
+
+            out.write(req.getBytes());
+
+
+            StringBuilder response = new StringBuilder();
+            while ((chint = inReader.read()) != -1) {
+                ch = (char) chint;
+                response.append(ch);
+                if (ch == '\n')
+                    ncount++;
+                if (ncount == 3)
+                    break;
+            }
+
+            System.out.println("\n" + response);
+        }catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to " + host);
+            System.exit(1);
+
+        }
     }
     public void close(){
-
+        try {
+            inReader.close();
+            socket.close();
+            System.exit(0);
+        }catch(IOException e){
+            System.err.println("Couldn't get I/O for the connection to " + host);
+            System.exit(1);
+        }
     }
 
 }
