@@ -13,7 +13,6 @@ public class MyHttpServer{
 
         int portNumber = Integer.parseInt(args[0]);
 
-
         try {
             ThreadGroup group_t = new ThreadGroup("threads");
             ServerSocket serverSocket = new ServerSocket(portNumber);
@@ -23,12 +22,21 @@ public class MyHttpServer{
                 System.out.println("\nThread count" + group_t.activeCount());
                 System.out.println("Listening for connections...");
 
-                while(group_t.activeCount() >= 5){}
+                while(group_t.activeCount() >= 5){
+                    Socket socket = serverSocket.accept();
+                    System.out.println("[HTTP]::Received new request");
+                    System.out.println("\n!!!======== Too many Connections ========!!!");
+                    socket.getOutputStream().write("HTTP/1.1 503 Service Unavailable\r\n".getBytes());
+                    socket.getOutputStream().flush();
+                    System.out.println("[HTTP]::Response Sent");
+                    socket.close();
+                }
 
                 if(group_t.activeCount() < 5) {
                     Socket socket = serverSocket.accept();
+                    System.out.println("[HTTP]::Received new request");
                     System.out.println("\n======== Connection Established ========\n");
-                    ClientHandler thread = new ClientHandler(socket);
+                    ClientHandler thread = new ClientHandler(socket, "localhost", portNumber);
                     (new Thread(group_t, thread)).start();
                 }
 

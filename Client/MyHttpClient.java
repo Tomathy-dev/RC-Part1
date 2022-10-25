@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 
 public class MyHttpClient implements MyWebClient {
 
@@ -15,7 +16,7 @@ public class MyHttpClient implements MyWebClient {
     private InputStream in;
     private OutputStream out;
 
-    private String format(String[] input){
+    private String formatPost(String[] input){
         String format = "";
 
         for(int i = 0; i < input.length; i++){
@@ -28,11 +29,11 @@ public class MyHttpClient implements MyWebClient {
 
     public MyHttpClient(String hostName, int portNumber) throws IOException{
         try{
-            host = hostName;
-            port = portNumber;
-            socket = new Socket(hostName, portNumber);
-            in = socket.getInputStream();
-            out = socket.getOutputStream();
+            this.host = hostName;
+            this.port = portNumber;
+            this.socket = new Socket(hostName, portNumber);
+            this.in = socket.getInputStream();
+            this.out = socket.getOutputStream();
 
         }catch (IOException e){
 			
@@ -46,20 +47,34 @@ public class MyHttpClient implements MyWebClient {
 
         try{
 
-            String req = "";
+            int ncount = 0;
+            int chint, clength;
+            char ch;
 
-            req = req.concat("GET /" + objectName + " HTTP/1.1\r\n");
-            req = req.concat("Host: " + host + ":" + port + "\r\n");
-            req = req.concat("Accept: text/html; charset=UTF-8\r\n");
-            req = req.concat("\r\n");
-
+            String req = "GET /" + objectName + " HTTP/1.1\r\n" +
+                    "Host: " + host + ":" + port + "\r\n" +
+                    "\r\n";
+            out.write(req.getBytes(StandardCharsets.UTF_8));
             BufferedReader inReader = new BufferedReader(new InputStreamReader(in));
-            out.write(req.getBytes());
-            String response = inReader.readLine();
+            StringBuilder response = new StringBuilder();
+            while((chint = inReader.read()) != -1){
+                ch = (char) chint;
+                response.append(ch);
+                if(ch == '\n')
+                    ncount++;
+                if(ncount == 4)
+                    break;
+            }
 
-            System.out.println(response);
-
-            socket.close();
+            String[] resS = response.toString().split(": ");
+            clength = Integer.parseInt(resS[2].replace("\r\n", ""));
+            for(int i = 0; i < clength; i++){
+                chint = inReader.read();
+                ch = (char) chint;
+                response.append(ch);
+            }
+            inReader.close();
+            System.out.println("\n" + response);
             
         } catch (IOException e) {
 
@@ -72,21 +87,41 @@ public class MyHttpClient implements MyWebClient {
 
         try{
 
-            String req = "";
+            StringBuilder req = new StringBuilder();
+            int ncount = 0;
+            int chint, clength;
+            char ch;
 
-            req = req.concat("POST /simpleForm.html HTTP/1.1\r\n");
-            req = req.concat("Host: " + host + ":" + port + "\r\n");
-            req = req.concat("Accept: text/html; charset=UTF-8\r\n");
-            req = req.concat("\r\n");
-            req = req.concat(format(data));
+            String eData = formatPost(data);
+            req.append("POST /simpleForm.html HTTP/1.1\r\n");
+            req.append("Host: ").append(host).append(":").append(port).append("\r\n");
+            req.append("Content-Length: ").append(eData.length()).append("\r\n");
+            req.append("\r\n");
+            req.append(eData);
+
+
+            out.write(req.toString().getBytes(StandardCharsets.UTF_8));
 
             BufferedReader inReader = new BufferedReader(new InputStreamReader(in));
-            out.write(req.getBytes());
-            String response = inReader.readLine();
+            StringBuilder response = new StringBuilder();
+            while((chint = inReader.read()) != -1){
+                ch = (char) chint;
+                response.append(ch);
+                if(ch == '\n')
+                    ncount++;
+                if(ncount == 4)
+                    break;
+            }
 
-            System.out.println(response);
-
-            socket.close();
+            String[] resS = response.toString().split(": ");
+            clength = Integer.parseInt(resS[2].replace("\r\n", ""));
+            for(int i = 0; i < clength; i++){
+                chint = inReader.read();
+                ch = (char) chint;
+                response.append(ch);
+            }
+            inReader.close();
+            System.out.println("\n" + response);
 
         } catch (IOException e) {
 
